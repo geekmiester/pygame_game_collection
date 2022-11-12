@@ -1,4 +1,4 @@
-import sys, pygame
+import os, time, sys, pygame
 from pygame.locals import*
 import random
 
@@ -39,12 +39,12 @@ screen.fill((41, 182, 246))
 pygame.display.update()
 
 #load player car
-car = pygame.image.load("car.png")
+car = pygame.image.load("assets/car.png")
 car_loc=car.get_rect()
 car_loc.center=right_lane, height*0.8
 
 #load enemy car
-enemy = pygame.image.load("enemy.png")
+enemy = pygame.image.load("assets/enemy.png")
 enemy_loc = enemy.get_rect()
 enemy_loc.center=left_lane, height*0.2
 
@@ -72,6 +72,7 @@ while running:
     #GAME END
     if car_loc[0] == enemy_loc[0] and enemy_loc[1]>car_loc[1] - 128:
         print ("GAME OVER")
+
         break
     
     #event listeners
@@ -119,7 +120,6 @@ while running:
         (255,255,255),
         (width/2 + road_w/2 - roadmark_w*3 , 0, roadmark_w, height)
     )    
-    
     
     screen.blit(car,car_loc)
     screen.blit(enemy,enemy_loc)
