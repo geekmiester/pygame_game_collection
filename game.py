@@ -1,130 +1,117 @@
-import os, time, sys, pygame
-from pygame.locals import*
+import pygame
 import random
 
-#USABLE VARIABLES
-
-#screen size
-size=width,height=(1200,800)
-
-#road
-road_w=int (width/1.6)
-
-#roadmark
-roadmark_w=int(width/80)
-
-#lanes
-right_lane=width/2 + road_w/4
-left_lane=width/2 - road_w/4
-
-#enemy speed
-speed=1
-
-#GAME INITIALIZATION
 pygame.init()
+pygame.mixer.init()
 
+# screen size
+screen = pygame.display.set_mode((600, 600))
 
-#screen size
-screen =pygame.display.set_mode(size)
+# title of the window
+pygame.display.set_caption("Space adventures")
 
-#windows title
-pygame.display.set_caption("Awesome Car Game")
+# clock to control game speed
+clock = pygame.time.Clock()
 
-#screen background
-screen.fill((41, 182, 246))
+# player image
+player_image = pygame.image.load("player.png")
+player_rect = player_image.get_rect()
 
+# obstacle image
+obstacle_image = pygame.image.load("asteroid.png")
+obstacle_rect = obstacle_image.get_rect()
 
+# Initialize player position
+player_rect.x = 300
+player_rect.y = 550
 
-#screen update
-pygame.display.update()
+# Initialize obstacle list
+obstacles = []
+for i in range(20):
+    obstacle = obstacle_image.get_rect()
+    obstacle.x = random.randint(0, 600)
+    obstacle.y = random.randint(-600, -100)
+    obstacles.append(obstacle)
 
-#load player car
-car = pygame.image.load("assets/car.png")
-car_loc=car.get_rect()
-car_loc.center=right_lane, height*0.8
+# Initialize obstacle speed
+obstacle_speed = 3
 
-#load enemy car
-enemy = pygame.image.load("assets/enemy.png")
-enemy_loc = enemy.get_rect()
-enemy_loc.center=left_lane, height*0.2
+# Initialize score
+score = 0
 
-counter = 0
-running=True
+# Game loop
+game_over=False
+running = False
+while not running:
 
-#GAME LOOP
-while running:
-    counter += 1
-    
-    #increase speed levels
-    if counter == 5000:
-        speed += 0.15
-        counter = 0
-        print("LEVEL UP", speed)
-
-    #enemy appear continuously and randomly
-    enemy_loc[1] += speed
-    if enemy_loc[1] > height:
-        if random.randint(0,1,) == 0:
-            enemy_loc.center = right_lane, -200
-        else:
-            enemy_loc.center = left_lane, -200
-
-    #GAME END
-    if car_loc[0] == enemy_loc[0] and enemy_loc[1]>car_loc[1] - 128:
-        print ("GAME OVER")
-
-        break
-    
-    #event listeners
+   
+    # Handle events
     for event in pygame.event.get():
-        if event.type==QUIT:
+        if event.type == pygame.QUIT:
+            running = True
+        elif event.type == pygame.K_SPACE:
+            game_over = True
             running=False
+    # Handle player movement
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT]:
+        player_rect.x -= 5
+    if keys[pygame.K_RIGHT]:
+        player_rect.x += 5
+    final_score=0
 
-        #GAME CONTROLS    
-        if event.type ==KEYDOWN:
-            
-            #move left
-            if event.key in [K_a, K_LEFT]:
-                car_loc = car_loc.move([-int(road_w/2),0])
-            
-            #move right
-            if event.key in [K_d, K_RIGHT]:
-                car_loc = car_loc.move([int(road_w/2),0])
+    if not game_over:
+        
+    #Play music
+        # pygame.mixer.music.load("space.mp3")
+        pygame.mixer.music.load("space.wav")
+        pygame.mixer.music.play(loops=-1)
+        
+    # Move obstacles down
+        for obstacle in obstacles:
+            obstacle.y += obstacle_speed
+        
+        # Check if obstacle reached the bottom of the screen
+        for obstacle in obstacles:
+            if obstacle.y >= 600:
+                obstacle.x = random.randint(0, 550)
+                obstacle.y = random.randint(-600, -100)
+                score += 1
+        
+        # Clear the screen
+        screen.fill((0,0,0))
+        
+        # Draw player
+        screen.blit(player_image, player_rect)
+        
+        # Draw obstacles
+        for obstacle in obstacles:
+            screen.blit(obstacle_image, obstacle)
+        
+        # Display score
+        font = pygame.font.Font(None, 30)
 
-    #SCREEN ELEMENTS
-    
-    #road color
-    pygame.draw.rect(
-        screen,
-        (50,50,50),
-        (width/2 - road_w/2, 0, road_w, height)
-    )
-    
-    #yellow mark
-    pygame.draw.rect(
-        screen,
-        (255,240,60),
-        (width/2 - roadmark_w/2 , 0, roadmark_w, height)
-    )
+        score_text = font.render("Score: " + str(score), True, (255,255,255))
+        screen.blit(score_text, (450, 10))
+        
+    # Check if player hit the obstacle
+        for obstacle in obstacles:
+            if player_rect.colliderect(obstacle):
+                screen.fill((0, 0, 0))
+                final_score=score      
+                font = pygame.font.Font(None, 30) 
+                game_over = font.render("Game Over!! your score  :" + str(final_score),True, (255,255,255))
+                screen.blit(game_over, (100, 200))
+                pygame.display.update()
 
-    #white lane left
-    pygame.draw.rect(
-        screen,
-        (255,255,255),
-        (width/2 - road_w/2 + roadmark_w*2, 0, roadmark_w, height)
-    )
 
-    #wight lane right
-    pygame.draw.rect(
-        screen,
-        (255,255,255),
-        (width/2 + road_w/2 - roadmark_w*3 , 0, roadmark_w, height)
-    )    
-    
-    screen.blit(car,car_loc)
-    screen.blit(enemy,enemy_loc)
-    
-    #cars udpate
-    pygame.display.update()
+        # Update the screen
+        pygame.display.update()
+        
+        # Set game speed
+        clock.tick(60)
 
+        pygame.display.flip()
+
+# Quit pygame
 pygame.quit()
