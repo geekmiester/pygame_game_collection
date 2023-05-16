@@ -1,4 +1,4 @@
-﻿# awesome_car_game
+﻿# pygame_game_collection
  ### this game is created as a fun learning project to try Pygame. Feel free to just clone the repo and try it out your self
  
  ## installation
@@ -9,4 +9,4 @@
  - Open a terminal
  - Type python game.py
  
- ![GAME PREVIEW](game_preview.png)
+
